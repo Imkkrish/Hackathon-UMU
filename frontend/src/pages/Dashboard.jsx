@@ -56,8 +56,8 @@ function Dashboard() {
   }, [navigate]);
 
   const handleLogout = () => {
-    sessionStorage.clear();
-    navigate('/login');
+  sessionStorage.clear();
+  navigate('/');
   };
 
   if (!userInfo) {
