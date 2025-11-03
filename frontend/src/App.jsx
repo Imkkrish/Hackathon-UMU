@@ -6,6 +6,7 @@ import GoogleCallback from './pages/GoogleCallback.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import AddressMatch from './pages/AddressMatch.jsx';
 import BatchProcess from './pages/BatchProcess.jsx';
+import Analytics from './pages/Analytics.jsx';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -18,6 +19,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/login" element={<Login />} />
         <Route path="/google-callback" element={<GoogleCallback />} />
         <Route 
@@ -44,10 +46,17 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+          path="/analytics" 
+          element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </Router>
   );
 }
 
 export default App;
-

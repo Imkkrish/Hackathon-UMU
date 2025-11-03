@@ -8,6 +8,7 @@ import aiBrain from '../assets/ai-brain.png';
 function Dashboard() {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
+  const [deliveryResult, setDeliveryResult] = useState(null);
 
   useEffect(() => {
     const storedUserInfo = sessionStorage.getItem('user_info');
@@ -15,6 +16,42 @@ function Dashboard() {
       setUserInfo(JSON.parse(storedUserInfo));
     } else {
       navigate('/login');
+    }
+
+    // Check for pending address/image after login
+    const pendingAddress = sessionStorage.getItem('pending_address');
+    const pendingImage = sessionStorage.getItem('pending_image');
+    if (pendingAddress || pendingImage) {
+      // Send to backend for processing
+      const formData = new FormData();
+      if (pendingAddress) formData.append('address', pendingAddress);
+      if (pendingImage) {
+        const imgObj = JSON.parse(pendingImage);
+        // Convert dataURL to Blob
+        const byteString = atob(imgObj.data.split(',')[1]);
+        const mimeString = imgObj.data.split(',')[0].split(':')[1].split(';')[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: mimeString });
+        formData.append('image', blob, imgObj.name);
+      }
+      fetch('/api/delivery-office', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(res => res.json())
+        .then(data => {
+          setDeliveryResult(data);
+          // Clear pending data
+          sessionStorage.removeItem('pending_address');
+          sessionStorage.removeItem('pending_image');
+        })
+        .catch(() => {
+          setDeliveryResult({ error: 'Failed to process address/image.' });
+        });
     }
   }, [navigate]);
 
@@ -27,10 +64,54 @@ function Dashboard() {
     return null;
   }
 
+  // Show delivery result if available
+  if (deliveryResult) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
+        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Delivery Office Result</h2>
+          {deliveryResult.error ? (
+            <div className="text-red-600 mb-4">{deliveryResult.error}</div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <span className="font-semibold">Address:</span> {deliveryResult.address || deliveryResult.input}
+              </div>
+              <div className="mb-4">
+                <span className="font-semibold">Delivery Office:</span> {deliveryResult.office || deliveryResult.match}
+              </div>
+              {deliveryResult.confidence && (
+                <div className="mb-4">
+                  <span className="font-semibold">Confidence:</span> {deliveryResult.confidence}
+                </div>
+              )}
+              {deliveryResult.pin && (
+                <div className="mb-4">
+                  <span className="font-semibold">PIN Code:</span> {deliveryResult.pin}
+                </div>
+              )}
+              {deliveryResult.mapUrl && (
+                <div className="mb-4">
+                  <a href={deliveryResult.mapUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View on Map</a>
+                </div>
+              )}
+            </>
+          )}
+          <button
+            className="mt-6 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+            onClick={() => setDeliveryResult(null)}
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
       {/* Header */}
-      <header className="bg-white shadow-md border-b-4 border-orange-500">
+      <header className="bg-white shadow-md" style={{ borderBottom: '4px solid #8B0000' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -48,7 +129,8 @@ function Dashboard() {
               <img 
                 src={userInfo.picture} 
                 alt={userInfo.name}
-                className="h-10 w-10 rounded-full border-2 border-orange-500"
+                className="h-10 w-10 rounded-full"
+                style={{ border: '1px solid #8B0000' }}
               />
               <button
                 onClick={handleLogout}
@@ -64,9 +146,9 @@ function Dashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white mb-8">
+        <div className="rounded-2xl p-8 text-white mb-8" style={{ background: 'linear-gradient(to right, #8B0000, #6B0000)' }}>
           <h2 className="text-3xl font-bold mb-2">Welcome back, {userInfo.name?.split(' ')[0]}!</h2>
-          <p className="text-orange-100">Access your tools and manage delivery operations efficiently.</p>
+          <p style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Access your tools and manage delivery operations efficiently.</p>
         </div>
 
         {/* Quick Stats */}
@@ -101,14 +183,14 @@ function Dashboard() {
             <p className="text-green-600 text-sm mt-2">↑ 2.1% improvement</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-orange-500">
+          <div className="bg-white rounded-xl shadow-sm p-6" style={{ borderLeft: '4px solid #8B0000' }}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-600 text-sm">Avg. Process Time</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">1.2s</p>
               </div>
-              <div className="bg-orange-100 p-3 rounded-lg">
-                <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#8B00001A' }}>
+                <svg className="h-6 w-6" style={{ color: '#8B0000' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -138,14 +220,17 @@ function Dashboard() {
             onClick={() => navigate('/address-match')}
             className="bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-shadow text-left group"
           >
-            <img src={aiBrain} alt="AI Match" className="h-16 w-16 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
+            <img src={aiBrain} alt="AI Match" className="h-16 w-16 mb-4" style={{ border: '1px solid #E5E7EB' }} />
+            <h3 className="text-xl font-bold text-gray-900 mb-2 transition-colors" 
+                onMouseEnter={(e) => e.target.style.color = '#8B0000'}
+                onMouseLeave={(e) => e.target.style.color = '#111827'}
+            >
               Single Address Match
             </h3>
             <p className="text-gray-600 mb-4">
               Upload parcel image or enter address to find the correct delivery office
             </p>
-            <div className="flex items-center text-orange-600 font-semibold">
+            <div className="flex items-center font-semibold" style={{ color: '#8B0000' }}>
               <span>Start Matching</span>
               <svg className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -157,7 +242,7 @@ function Dashboard() {
             onClick={() => navigate('/batch-process')}
             className="bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-shadow text-left group"
           >
-            <img src={analyticsChart} alt="Batch Process" className="h-16 w-16 mb-4" />
+            <img src={analyticsChart} alt="Batch Process" className="h-16 w-16 mb-4" style={{ border: '1px solid #E5E7EB' }} />
             <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
               Batch Processing
             </h3>
@@ -176,7 +261,7 @@ function Dashboard() {
             onClick={() => navigate('/analytics')}
             className="bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-shadow text-left group"
           >
-            <img src={deliveryTruck} alt="Analytics" className="h-16 w-16 mb-4" />
+            <img src={deliveryTruck} alt="Analytics" className="h-16 w-16 mb-4" style={{ border: '1px solid #E5E7EB' }} />
             <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
               Analytics & Reports
             </h3>
@@ -205,8 +290,10 @@ function Dashboard() {
               <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-4">
                   <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                    item.status === 'success' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'
-                  }`}>
+                    item.status === 'success' ? 'bg-green-100 text-green-600' : ''
+                  }`}
+                  style={item.status === 'warning' ? { backgroundColor: '#8B00001A', color: '#8B0000' } : {}}
+                  >
                     {item.status === 'success' ? (
                       <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import indiaPostLogo from '../assets/indiapostlogo.svg';
 import digitalIndiaLogo from '../assets/digitalIndia.svg';
 import swachBharathLogo from '../assets/swachBharath.svg';
@@ -9,11 +8,12 @@ import deliveryTruck from '../assets/delivery-truck.png';
 import mapLocation from '../assets/map-location.png';
 import aiBrain from '../assets/ai-brain.png';
 import analyticsChart from '../assets/analytics-chart.png';
+import LoginModal from '../components/LoginModal.jsx';
 
 function Home() {
-  const navigate = useNavigate();
   const [addressInput, setAddressInput] = useState('');
   const [imageFile, setImageFile] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -24,14 +24,28 @@ function Home() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Redirect to login first
-    navigate('/login');
+    // Store address and image in sessionStorage
+    sessionStorage.setItem('pending_address', addressInput);
+    if (imageFile) {
+      // Store image file name and data URL
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        sessionStorage.setItem('pending_image', JSON.stringify({ name: imageFile.name, data: ev.target.result }));
+        setShowLoginModal(true);
+      };
+      reader.readAsDataURL(imageFile);
+    } else {
+      setShowLoginModal(true);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
+      {/* Login Modal */}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      
       {/* Header */}
-      <header className="bg-white shadow-md border-b-4 border-orange-500">
+      <header className="bg-white shadow-md border-b-4" style={{ borderColor: '#8B0000' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Left: India Post Logo */}
@@ -50,8 +64,9 @@ function Home() {
               <img src={swachBharathLogo} alt="Swachh Bharat" className="h-12 w-auto hidden sm:block" />
               <img src={indiaFlag} alt="India Flag" className="h-10 w-auto" />
               <button
-                onClick={() => navigate('/login')}
-                className="ml-4 px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold shadow-md"
+                onClick={() => setShowLoginModal(true)}
+                className="ml-4 px-6 py-2 text-white rounded-lg hover:opacity-90 transition-colors font-semibold shadow-md"
+                style={{ backgroundColor: '#8B0000', fontFamily: "'Noto Sans', sans-serif" }}
               >
                 Sign In
               </button>
@@ -66,14 +81,14 @@ function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left: Hero Content */}
             <div className="space-y-6">
-              <div className="inline-flex items-center space-x-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-medium">
+              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium" style={{ backgroundColor: '#8B00001A', color: '#8B0000' }}>
                 <img src={aiBrain} alt="AI" className="h-5 w-5" />
                 <span>AI-Powered Delivery System</span>
               </div>
               
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
                 Smart Address
-                <span className="text-orange-600"> Matching</span>
+                <span style={{ color: '#8B0000' }}> Matching</span>
                 <br />
                 for India Post
               </h1>
@@ -86,7 +101,7 @@ function Home() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 pt-4">
                 <div className="text-center p-4 bg-white rounded-lg shadow-sm">
-                  <div className="text-3xl font-bold text-orange-600">165K+</div>
+                  <div className="text-3xl font-bold" style={{ color: '#8B0000' }}>165K+</div>
                   <div className="text-sm text-gray-600">Post Offices</div>
                 </div>
                 <div className="text-center p-4 bg-white rounded-lg shadow-sm">
@@ -117,7 +132,9 @@ function Home() {
                     value={addressInput}
                     onChange={(e) => setAddressInput(e.target.value)}
                     placeholder="e.g., Kothimir B.O, Kumuram Bheem Asifabad, Telangana 504273"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent resize-none"
+                    style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                    onFocus={(e) => e.target.style.ringColor = '#8B0000'}
                     rows="4"
                   />
                 </div>
@@ -164,7 +181,13 @@ function Home() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-orange-600 hover:to-orange-700 transform hover:scale-[1.02] transition-all shadow-lg"
+                  className="w-full text-white font-semibold py-4 px-6 rounded-lg transform hover:scale-[1.02] transition-all shadow-lg"
+                  style={{ 
+                    backgroundColor: '#8B0000',
+                    fontFamily: "'Noto Sans', sans-serif"
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#6B0000'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#8B0000'}
                 >
                   🔍 Find Matching Delivery Office
                 </button>
@@ -195,12 +218,12 @@ function Home() {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 hover:shadow-xl transition-shadow">
+            <div className="rounded-xl p-8 hover:shadow-xl transition-shadow" style={{ background: 'linear-gradient(to bottom right, #8B00000D, #8B00001A)' }}>
               <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mb-4">
                 <img src={deliveryTruck} alt="Fast Delivery" className="h-10 w-10" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Merged PIN Support</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: "'Noto Sans', sans-serif" }}>Merged PIN Support</h3>
+              <p className="text-gray-600" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
                 Automatically handles PIN code mergers and operational delivery hubs for accurate routing.
               </p>
             </div>
@@ -229,7 +252,7 @@ function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-orange-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div className="text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" style={{ backgroundColor: '#8B0000', fontFamily: "'Noto Sans', sans-serif" }}>
                 1
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Input Address</h3>
@@ -256,24 +279,39 @@ function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-orange-500 to-orange-600 py-16">
+      <section className="py-16" style={{ background: 'linear-gradient(to right, #8B0000, #6B0000)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
+          <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
             Ready to optimize your delivery network?
           </h2>
-          <p className="text-xl text-orange-100 mb-8">
+          <p className="text-xl mb-8" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: "'Noto Sans', sans-serif" }}>
             Join thousands of postal workers using our AI-powered system
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => navigate('/login')}
-              className="bg-white text-orange-600 font-semibold py-3 px-8 rounded-lg hover:bg-orange-50 transition-colors shadow-lg"
+              onClick={() => setShowLoginModal(true)}
+              className="bg-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-lg"
+              style={{ 
+                color: '#8B0000',
+                fontFamily: "'Noto Sans', sans-serif"
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#F5F5F5'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#FFFFFF'}
             >
               Get Started →
             </button>
             <button
-              onClick={() => navigate('/login')}
-              className="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg hover:bg-white hover:text-orange-600 transition-colors"
+              onClick={() => setShowLoginModal(true)}
+              className="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+              style={{ fontFamily: "'Noto Sans', sans-serif" }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#FFFFFF';
+                e.target.style.color = '#8B0000';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = '#FFFFFF';
+              }}
             >
               View Documentation
             </button>

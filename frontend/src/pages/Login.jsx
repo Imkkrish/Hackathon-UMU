@@ -19,22 +19,22 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-orange-600 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
       <div className="max-w-md w-full">
         {/* Logo Section */}
         <div className="text-center mb-8">
           <div className="flex justify-center items-center space-x-4 mb-4">
             <img src={ashokThumb} alt="Ashok Stambh" className="h-16 w-auto" />
-            <img src={indiaPostLogo} alt="India Post" className="h-20 w-auto brightness-0 invert" />
+            <img src={indiaPostLogo} alt="India Post" className="h-20 w-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Department of Posts
           </h1>
-          <p className="text-blue-200">Government of India</p>
+          <p className="text-gray-600">Government of India</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               AI Delivery System
@@ -47,7 +47,7 @@ function Login() {
           {/* Google Sign In Button */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center space-x-3 bg-white border-2 border-gray-300 rounded-lg px-6 py-3 hover:bg-gray-50 transition-colors shadow-sm"
+            className="w-full flex items-center justify-center space-x-3 bg-white border-1 border-gray-200 rounded-lg px-6 py-3 hover:bg-gray-50 transition-colors shadow-sm"
           >
             <svg className="w-6 h-6" viewBox="0 0 24 24">
               <path
@@ -101,9 +101,10 @@ function Login() {
         {/* Footer */}
         <div className="text-center mt-8">
           <div className="flex justify-center items-center space-x-4 mb-4">
+            <img src={indiaPostLogo} alt="India Post" className="h-12 w-auto" />
             <img src={digitalIndiaLogo} alt="Digital India" className="h-10 w-auto opacity-80" />
           </div>
-          <p className="text-blue-200 text-sm">
+          <p className="text-gray-600 text-sm">
             © 2025 Department of Posts, Government of India
           </p>
         </div>
