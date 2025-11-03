@@ -1,0 +1,131 @@
+# AI-Powered Delivery Post Office Identification System
+# Docker Compose Configuration
+
+version: '3.8'
+
+services:
+  # DIGIPIN Backend API (Port 5000)
+  digipin:
+    build:
+      context: ./digipin
+      dockerfile: Dockerfile
+    container_name: digipin-api
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+    volumes:
+      - ./digipin:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - delivery-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/digipin/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ML Microservice (Port 8000)
+  ml-service:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: ml-service
+    ports:
+      - "8000:8000"
+    environment:
+      - CSV_PATH=/data/all_india_pincode_directory_2025.csv
+      - ML_PORT=8000
+      - ML_HOST=0.0.0.0
+      - DIGIPIN_API_URL=http://digipin:5000
+      - MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
+    volumes:
+      - ./ml:/app
+      - ./post:/data:ro  # Mount data directory as read-only
+      - ml-models-cache:/root/.cache  # Cache for ML models
+      - ml-faiss-cache:/app/cache  # Cache for FAISS index and metadata
+    restart: unless-stopped
+    networks:
+      - delivery-network
+    depends_on:
+      - digipin
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import requests; requests.get(\"http://localhost:8000/health\")'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s  # ML models need time to load
+
+  # Backend API (Port 3001)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-api
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DIGIPIN_API_URL=http://digipin:5000
+      - ML_API_URL=http://ml-service:8000
+      - CSV_PATH=/data/all_india_pincode_directory_2025.csv
+    volumes:
+      - ./backend:/app
+      - ./post:/data:ro
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - delivery-network
+    depends_on:
+      - digipin
+      - ml-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Frontend (Port 5173)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Build-time variables only - NO SECRETS HERE
+        - VITE_API_URL=http://localhost:3001
+        - VITE_DIGIPIN_API_URL=http://localhost:5000
+        - VITE_ML_API_URL=http://localhost:8000
+    container_name: frontend-app
+    ports:
+      - "5173:80"  # Map container port 80 to host 5173
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - delivery-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  delivery-network:
+    driver: bridge
+    name: delivery-network
+
+volumes:
+  ml-models-cache:
+    name: ml-models-cache
+    driver: local
+  ml-faiss-cache:
+    name: ml-faiss-cache
+    driver: local
