@@ -324,7 +324,7 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
-              <img src={indiaPostLogo} alt="India Post" className="h-12 w-auto brightness-0 invert" />
+                <img src={indiaPostLogo} alt="India Post" className="h-10 w-auto" />
               <div>
                 <p className="font-semibold">India Post - AI Delivery System</p>
                 <p className="text-sm text-gray-400">Powered by DIGIPIN & Machine Learning</p>
