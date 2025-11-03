@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env.local
+.env
+*.env
+secrets/
+node_modules/
+npm-debug.log*
+README.md
+.vscode/
+.DS_Store
+*.md

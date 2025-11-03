@@ -128,23 +128,51 @@ Hackathon/
 
 ### Component Specifications
 
-#### 🖥️ Frontend (React + Vite + Tailwind + Three.js)
+#### 🖥️ Frontend (React + Vite + Tailwind + Three.js + Google OAuth)
 
-**Purpose:** Interactive UI for address correction and visualization
+**Purpose:** Interactive UI for address correction and visualization with secure authentication
 
 **Key Features:**
+- **Google OAuth 2.0 Authentication** for authorized personnel
 - Address input form (text or image upload)
 - Real-time address matching with confidence scores
 - 2D map view (Mapbox/Leaflet) showing delivery office locations
 - 3D postal sorting visualization (react-three-fiber)
 - Batch CSV upload with progress tracking and results download
+- Multi-page application with protected routes
+
+**Pages:**
+1. **Home (/)** - Landing page with product overview
+2. **Login (/login)** - Google OAuth sign-in
+3. **Dashboard (/dashboard)** - Main control panel with stats and quick actions
+4. **Address Match (/address-match)** - Single address correction tool
+5. **Batch Process (/batch-process)** - Bulk CSV processing
+6. **Analytics (/analytics)** - Performance metrics and reports
 
 **Tech Stack:**
 - Vite + React 18
+- React Router v7 for routing
 - Tailwind CSS for styling
+- Google OAuth 2.0 for authentication
 - react-three-fiber + @react-three/drei for 3D
 - Mapbox GL JS or Leaflet for maps
 - Axios for API calls
+
+**Authentication Details:**
+- **Google OAuth Client ID:** `372975400843-ffr7c5j59nmga7tk2nbog6o5mjpgq11s.apps.googleusercontent.com`
+- **Project:** Department of Posts, Govt. of India
+- **Authorized Origins:** `http://localhost:5173`, `http://localhost:3000`
+- **Redirect URIs:** `http://localhost:5173/google-callback`, `http://localhost:3000/google-callback`
+- **Flow:** Client-side OAuth with access token stored in sessionStorage
+- **Security:** Client Secret is NEVER exposed in frontend code or Docker images
+
+**Security Measures:**
+- Client Secret excluded from all frontend code
+- Environment variables managed through .env.local (gitignored)
+- Docker build uses build args (no secrets in image)
+- Protected routes require authentication
+- Session-based access control
+- Nginx security headers in production
 
 #### ⚙️ Backend Enhancement (Node.js + Express)
 

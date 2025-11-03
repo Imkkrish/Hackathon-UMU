@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import indiaPostLogo from '../assets/indiapostlogo.svg';
 import digitalIndiaLogo from '../assets/digitalIndia.svg';
 import swachBharathLogo from '../assets/swachBharath.svg';
 import ashokThumb from '../assets/ashok-thumb-logo.svg';
-import indiaFlag from '../assets/india-flag.png';
+import indiaFlag from '../assets/flag.svg';
 import deliveryTruck from '../assets/delivery-truck.png';
 import mapLocation from '../assets/map-location.png';
 import aiBrain from '../assets/ai-brain.png';
 import analyticsChart from '../assets/analytics-chart.png';
 
 function Home() {
+  const navigate = useNavigate();
   const [addressInput, setAddressInput] = useState('');
   const [imageFile, setImageFile] = useState(null);
 
@@ -22,8 +24,8 @@ function Home() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle address matching logic here
-    console.log('Processing address:', addressInput);
+    // Redirect to login first
+    navigate('/login');
   };
 
   return (
@@ -47,6 +49,12 @@ function Home() {
               <img src={digitalIndiaLogo} alt="Digital India" className="h-12 w-auto hidden sm:block" />
               <img src={swachBharathLogo} alt="Swachh Bharat" className="h-12 w-auto hidden sm:block" />
               <img src={indiaFlag} alt="India Flag" className="h-10 w-auto" />
+              <button
+                onClick={() => navigate('/login')}
+                className="ml-4 px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold shadow-md"
+              >
+                Sign In
+              </button>
             </div>
           </div>
         </div>
@@ -257,10 +265,16 @@ function Home() {
             Join thousands of postal workers using our AI-powered system
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-orange-600 font-semibold py-3 px-8 rounded-lg hover:bg-orange-50 transition-colors shadow-lg">
-              Try Batch Upload
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-white text-orange-600 font-semibold py-3 px-8 rounded-lg hover:bg-orange-50 transition-colors shadow-lg"
+            >
+              Get Started →
             </button>
-            <button className="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg hover:bg-white hover:text-orange-600 transition-colors">
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg hover:bg-white hover:text-orange-600 transition-colors"
+            >
               View Documentation
             </button>
           </div>
