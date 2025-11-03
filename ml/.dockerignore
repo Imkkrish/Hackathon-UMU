@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Data files (will be mounted)
+*.csv
+*.db
+*.sqlite
+
+# FAISS indexes (will be built at runtime)
+*.index
+*.meta.npy
+
+# Logs
+*.log
+
+# Tests
+test_*.py
+tests/
+.pytest_cache/
+
+# Documentation (not needed in image)
+*.md
+docs/
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Setup scripts
+setup.sh

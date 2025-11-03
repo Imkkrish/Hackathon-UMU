@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# Data files
+*.db
+*.sqlite
+*.sqlite3
+
+# FAISS indexes
+*.index
+*.meta.npy
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Models cache
+.cache/
+models_cache/
+cache/
+
+# Test files
+.pytest_cache/
+.coverage
+htmlcov/
+PERSISTENCE_UPDATE_SUMMARY.md
+CACHE_QUICK_REF.md
+CACHE_PERSISTENCE.md
+IMPLEMENTATION_COMPLETE.md
+ISUAL_FLOW.md
