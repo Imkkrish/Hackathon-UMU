@@ -1,158 +1,296 @@
-import React from 'react';
-import ashokThumbLogo from '../assets/ashok-thumb-logo.svg';
-import digiIndLogo from '../assets/digitalIndia.svg';
-import indiaPostLogo from '../assets/india-post-logo.png';
+import React, { useState } from 'react';
+import indiaPostLogo from '../assets/indiapostlogo.svg';
+import digitalIndiaLogo from '../assets/digitalIndia.svg';
+import swachBharathLogo from '../assets/swachBharath.svg';
+import ashokThumb from '../assets/ashok-thumb-logo.svg';
+import indiaFlag from '../assets/india-flag.png';
 import deliveryTruck from '../assets/delivery-truck.png';
-import aiBrain from '../assets/ai-brain.png';
 import mapLocation from '../assets/map-location.png';
+import aiBrain from '../assets/ai-brain.png';
 import analyticsChart from '../assets/analytics-chart.png';
 
 function Home() {
-	return (
-		<div className="min-h-screen bg-gradient-to-br from-[#0F172A] to-[#1E293B] flex flex-col items-center font-sans overflow-hidden">
-			{/* Animated Background Elements */}
-			<div className="absolute inset-0 overflow-hidden">
-				<div className="absolute top-20 left-10 w-32 h-32 bg-[#E31E24]/10 rounded-full animate-pulse"></div>
-				<div className="absolute top-40 right-20 w-24 h-24 bg-blue-500/10 rounded-full animate-bounce" style={{animationDelay: '1s'}}></div>
-				<div className="absolute bottom-40 left-20 w-20 h-20 bg-green-500/10 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
-			</div>
+  const [addressInput, setAddressInput] = useState('');
+  const [imageFile, setImageFile] = useState(null);
 
-			{/* Hero Section */}
-			<header className="w-full flex flex-col items-center py-10 relative z-10 animate-fade-in">
-				<div className="flex items-center gap-4 mb-6 animate-slide-up">
-					<img
-						src={indiaPostLogo}
-						alt="India Post"
-						className="h-20 drop-shadow-lg hover:scale-105 transition-transform duration-300"
-					/>
-					<div className="flex flex-col items-center">
-						<img
-							src={ashokThumbLogo}
-							alt="Ashok Chakra"
-							className="h-8 w-8 mb-2 animate-spin-slow"
-						/>
-						<img
-							src={digiIndLogo}
-							alt="Digital India"
-							className="h-6 opacity-80"
-						/>
-					</div>
-				</div>
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+    }
+  };
 
-				<h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 text-center tracking-tight animate-slide-up" style={{animationDelay: '0.2s'}}>
-					AI-Powered Delivery Post Office
-					<span className="block text-[#E31E24] animate-pulse">Identification System</span>
-				</h1>
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle address matching logic here
+    console.log('Processing address:', addressInput);
+  };
 
-				<p className="text-lg md:text-xl text-gray-300 text-center max-w-2xl mb-4 animate-slide-up" style={{animationDelay: '0.4s'}}>
-					Transforming messy or incomplete postal addresses into precise delivery targets using AI, for the world's largest postal network.
-				</p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
+      {/* Header */}
+      <header className="bg-white shadow-md border-b-4 border-orange-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left: India Post Logo */}
+            <div className="flex items-center space-x-4">
+              <img src={indiaPostLogo} alt="India Post" className="h-16 w-auto" />
+              <div className="hidden md:block">
+                <h1 className="text-2xl font-bold text-gray-800">India Post</h1>
+                <p className="text-sm text-gray-600">Department of Posts, Govt. of India</p>
+              </div>
+            </div>
 
-				<div className="flex flex-wrap gap-4 justify-center mt-2 animate-slide-up" style={{animationDelay: '0.6s'}}>
-					<span className="bg-[#E31E24] text-white px-4 py-1 rounded-full text-sm font-semibold shadow hover:bg-red-600 transition-colors animate-bounce" style={{animationDelay: '0.8s'}}>India Post</span>
-					<span className="bg-blue-900 text-white px-4 py-1 rounded-full text-sm font-semibold shadow hover:bg-blue-800 transition-colors animate-bounce" style={{animationDelay: '1s'}}>DIGIPIN</span>
-					<span className="bg-green-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow hover:bg-green-700 transition-colors animate-bounce" style={{animationDelay: '1.2s'}}>AI + Visualization</span>
-				</div>
-			</header>
+            {/* Right: Government Logos */}
+            <div className="flex items-center space-x-4">
+              <img src={ashokThumb} alt="Ashok Stambh" className="h-12 w-auto" />
+              <img src={digitalIndiaLogo} alt="Digital India" className="h-12 w-auto hidden sm:block" />
+              <img src={swachBharathLogo} alt="Swachh Bharat" className="h-12 w-auto hidden sm:block" />
+              <img src={indiaFlag} alt="India Flag" className="h-10 w-auto" />
+            </div>
+          </div>
+        </div>
+      </header>
 
-			{/* Problem Statement & Solution */}
-			<section className="w-full max-w-3xl bg-white/10 rounded-xl shadow-lg p-8 mt-2 mb-6 backdrop-blur-sm animate-fade-in" style={{animationDelay: '0.8s'}}>
-				<h2 className="text-2xl font-bold text-white mb-4 animate-slide-left">Why this matters?</h2>
-				<ul className="list-disc ml-6 text-gray-200 text-base mb-6 space-y-2">
-					<li className="animate-slide-left" style={{animationDelay: '1s'}}>India Post handles <span className="font-bold text-[#E31E24]">165,000+ post offices</span> and <span className="font-bold text-[#E31E24]">19,000+ PIN codes</span>.</li>
-					<li className="animate-slide-left" style={{animationDelay: '1.1s'}}><span className="font-bold text-[#E31E24]">5% of daily mail</span> has incorrect or mismatched PIN codes, causing delays and misrouted parcels.</li>
-					<li className="animate-slide-left" style={{animationDelay: '1.2s'}}>Dynamic network changes (merged PINs, Nodal Delivery Centres) make manual correction impossible.</li>
-				</ul>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left: Hero Content */}
+            <div className="space-y-6">
+              <div className="inline-flex items-center space-x-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-medium">
+                <img src={aiBrain} alt="AI" className="h-5 w-5" />
+                <span>AI-Powered Delivery System</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
+                Smart Address
+                <span className="text-orange-600"> Matching</span>
+                <br />
+                for India Post
+              </h1>
+              
+              <p className="text-xl text-gray-600 leading-relaxed">
+                Identify correct delivery locations instantly with AI. Serving 165,000+ post offices 
+                across 19,000+ PIN codes with precision and speed.
+              </p>
 
-				<h2 className="text-xl font-semibold text-white mb-4 animate-slide-right" style={{animationDelay: '1.3s'}}>Our Solution</h2>
-				<ul className="list-disc ml-6 text-gray-200 text-base space-y-2">
-					<li className="animate-slide-right" style={{animationDelay: '1.4s'}}><span className="font-bold text-[#E31E24]">AI-powered address correction</span> for any input: text or image.</li>
-					<li className="animate-slide-right" style={{animationDelay: '1.5s'}}><span className="font-bold text-[#E31E24]">DIGIPIN geospatial lookup</span> for precise delivery office mapping.</li>
-					<li className="animate-slide-right" style={{animationDelay: '1.6s'}}><span className="font-bold text-[#E31E24]">3D visualization</span> of parcel routing and confidence scoring.</li>
-					<li className="animate-slide-right" style={{animationDelay: '1.7s'}}><span className="font-bold text-[#E31E24]">Batch analytics</span> for large-scale address correction.</li>
-				</ul>
-			</section>
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-4">
+                <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="text-3xl font-bold text-orange-600">165K+</div>
+                  <div className="text-sm text-gray-600">Post Offices</div>
+                </div>
+                <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="text-3xl font-bold text-blue-600">19K+</div>
+                  <div className="text-sm text-gray-600">PIN Codes</div>
+                </div>
+                <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="text-3xl font-bold text-green-600">95%</div>
+                  <div className="text-sm text-gray-600">Accuracy</div>
+                </div>
+              </div>
+            </div>
 
-			{/* Features Section */}
-			<section className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in" style={{animationDelay: '1.8s'}}>
-				<div className="bg-white/10 rounded-xl p-6 flex flex-col items-start shadow hover:shadow-xl hover:scale-105 transition-all duration-300 backdrop-blur-sm animate-slide-up" style={{animationDelay: '2s'}}>
-					<div className="w-full h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg mb-4 flex items-center justify-center">
-						<img src={mapLocation} alt="Location" className="h-16 w-16 opacity-80" />
-					</div>
-					<h3 className="text-lg font-bold text-white mb-2">Single Address Correction</h3>
-					<p className="text-gray-200 mb-2">Paste an address or upload a parcel image. Instantly get the best matching delivery office, PIN code, and confidence score.</p>
-				</div>
+            {/* Right: Address Input Card */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+              <div className="flex items-center space-x-3 mb-6">
+                <img src={mapLocation} alt="Location" className="h-8 w-8" />
+                <h2 className="text-2xl font-bold text-gray-800">Find Delivery Office</h2>
+              </div>
 
-				<div className="bg-white/10 rounded-xl p-6 flex flex-col items-start shadow hover:shadow-xl hover:scale-105 transition-all duration-300 backdrop-blur-sm animate-slide-up" style={{animationDelay: '2.1s'}}>
-					<div className="w-full h-32 bg-gradient-to-br from-green-500/20 to-teal-500/20 rounded-lg mb-4 flex items-center justify-center">
-						<img src={analyticsChart} alt="Analytics" className="h-16 w-16 opacity-80" />
-					</div>
-					<h3 className="text-lg font-bold text-white mb-2">Batch Processing</h3>
-					<p className="text-gray-200 mb-2">Upload a CSV of thousands of addresses. Get analytics, corrections, and export results for operational efficiency.</p>
-				</div>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Text Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter Address or Paste Text
+                  </label>
+                  <textarea
+                    value={addressInput}
+                    onChange={(e) => setAddressInput(e.target.value)}
+                    placeholder="e.g., Kothimir B.O, Kumuram Bheem Asifabad, Telangana 504273"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                    rows="4"
+                  />
+                </div>
 
-				<div className="bg-white/10 rounded-xl p-6 flex flex-col items-start shadow hover:shadow-xl hover:scale-105 transition-all duration-300 backdrop-blur-sm animate-slide-up" style={{animationDelay: '2.2s'}}>
-					<div className="w-full h-32 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-lg mb-4 flex items-center justify-center">
-						<img src={deliveryTruck} alt="Delivery" className="h-16 w-16 opacity-80" />
-					</div>
-					<h3 className="text-lg font-bold text-white mb-2">3D Routing Visualization</h3>
-					<p className="text-gray-200 mb-2">See parcels animated in a virtual warehouse, color-coded by confidence, with interactive map overlays.</p>
-				</div>
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">OR</span>
+                  </div>
+                </div>
 
-				<div className="bg-white/10 rounded-xl p-6 flex flex-col items-start shadow hover:shadow-xl hover:scale-105 transition-all duration-300 backdrop-blur-sm animate-slide-up" style={{animationDelay: '2.3s'}}>
-					<div className="w-full h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg mb-4 flex items-center justify-center">
-						<img src={aiBrain} alt="AI" className="h-16 w-16 opacity-80" />
-					</div>
-					<h3 className="text-lg font-bold text-white mb-2">Explainable AI & Analytics</h3>
-					<p className="text-gray-200 mb-2">Understand why a match was made, see which tokens influenced predictions, and view heatmaps of corrections.</p>
-				</div>
-			</section>
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Parcel Image
+                  </label>
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg className="w-8 h-8 mb-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="mb-1 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+                  </div>
+                  {imageFile && (
+                    <p className="mt-2 text-sm text-green-600">✓ {imageFile.name}</p>
+                  )}
+                </div>
 
-			{/* Call to Action */}
-			<section className="w-full max-w-2xl flex flex-col items-center mb-10 animate-fade-in" style={{animationDelay: '2.4s'}}>
-				<button className="px-8 py-3 bg-[#E31E24] text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 hover:scale-110 transition-all duration-300 mb-2 animate-pulse">
-					Get Started
-				</button>
-				<span className="text-gray-300 text-sm animate-fade-in" style={{animationDelay: '2.6s'}}>
-					Try it now: Paste an address or upload a parcel image below
-				</span>
-			</section>
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-orange-600 hover:to-orange-700 transform hover:scale-[1.02] transition-all shadow-lg"
+                >
+                  🔍 Find Matching Delivery Office
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
 
-			{/* Footer */}
-			<footer className="mt-auto py-6 text-gray-400 text-sm w-full text-center animate-fade-in" style={{animationDelay: '2.8s'}}>
-				&copy; 2025 India Post Hackathon | Powered by DIGIPIN & AI
-			</footer>
+      {/* Features Section */}
+      <section className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Powered by Advanced AI</h2>
+            <p className="text-xl text-gray-600">Intelligent features designed for efficiency</p>
+          </div>
 
-			{/* Custom CSS for animations */}
-			<style jsx>{`
-				@keyframes fade-in {
-					from { opacity: 0; transform: translateY(20px); }
-					to { opacity: 1; transform: translateY(0); }
-				}
-				@keyframes slide-up {
-					from { opacity: 0; transform: translateY(30px); }
-					to { opacity: 1; transform: translateY(0); }
-				}
-				@keyframes slide-left {
-					from { opacity: 0; transform: translateX(-30px); }
-					to { opacity: 1; transform: translateX(0); }
-				}
-				@keyframes slide-right {
-					from { opacity: 0; transform: translateX(30px); }
-					to { opacity: 1; transform: translateX(0); }
-				}
-				@keyframes spin-slow {
-					from { transform: rotate(0deg); }
-					to { transform: rotate(360deg); }
-				}
-				.animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
-				.animate-slide-up { animation: slide-up 0.8s ease-out forwards; }
-				.animate-slide-left { animation: slide-left 0.8s ease-out forwards; }
-				.animate-slide-right { animation: slide-right 0.8s ease-out forwards; }
-				.animate-spin-slow { animation: spin-slow 20s linear infinite; }
-			`}</style>
-		</div>
-	);
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-8 hover:shadow-xl transition-shadow">
+              <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                <img src={aiBrain} alt="AI Matching" className="h-10 w-10" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Matching</h3>
+              <p className="text-gray-600">
+                AI-powered semantic search matches addresses with 95%+ accuracy using advanced NLP models.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 hover:shadow-xl transition-shadow">
+              <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                <img src={deliveryTruck} alt="Fast Delivery" className="h-10 w-10" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Merged PIN Support</h3>
+              <p className="text-gray-600">
+                Automatically handles PIN code mergers and operational delivery hubs for accurate routing.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-8 hover:shadow-xl transition-shadow">
+              <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                <img src={analyticsChart} alt="Analytics" className="h-10 w-10" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Batch Processing</h3>
+              <p className="text-gray-600">
+                Process thousands of addresses in bulk with CSV upload and download corrected results.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+            <p className="text-xl text-gray-600">Three simple steps to accurate delivery</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-orange-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                1
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Input Address</h3>
+              <p className="text-gray-600">Type or paste address, or upload parcel image for OCR extraction</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-blue-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                2
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">AI Analysis</h3>
+              <p className="text-gray-600">Our AI matches your address against 165K+ post offices in milliseconds</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                3
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Get Results</h3>
+              <p className="text-gray-600">View matches with confidence scores, location on map, and DIGIPIN code</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-orange-500 to-orange-600 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Ready to optimize your delivery network?
+          </h2>
+          <p className="text-xl text-orange-100 mb-8">
+            Join thousands of postal workers using our AI-powered system
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="bg-white text-orange-600 font-semibold py-3 px-8 rounded-lg hover:bg-orange-50 transition-colors shadow-lg">
+              Try Batch Upload
+            </button>
+            <button className="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg hover:bg-white hover:text-orange-600 transition-colors">
+              View Documentation
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-4 mb-4 md:mb-0">
+              <img src={indiaPostLogo} alt="India Post" className="h-12 w-auto brightness-0 invert" />
+              <div>
+                <p className="font-semibold">India Post - AI Delivery System</p>
+                <p className="text-sm text-gray-400">Powered by DIGIPIN & Machine Learning</p>
+              </div>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-sm text-gray-400">
+                © 2025 Department of Posts, Government of India
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Developed for India Post Hackathon
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
 
 export default Home;
