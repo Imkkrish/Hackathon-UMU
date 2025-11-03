@@ -8,7 +8,7 @@ import uvicorn
 import re
 import os
 
-DATA_FILE = "all_india_pincode_directory_2025.csv"
+DATA_FILE = "Hackathon-UMU/post/all_india_pincode_directory_2025.csv"
 DB_FILE = "pincodes.db"
 
 app = FastAPI(title="Data Service")
