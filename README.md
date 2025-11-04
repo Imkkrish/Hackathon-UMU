@@ -1,269 +1,127 @@
-# 🚀 AI-Powered Delivery Post Office Identification System
+  --build-arg VITE_GOOGLE_CLIENT_ID=372975400843-ffr7c5j59nmga7tk2nbog6o5mjpgq11s.apps.googleusercontent.com \
+  --build-arg VITE_API_BASE_URL=http://localhost:3001 \
+  -t india-post-frontend .
+docker run -p 5173:80 india-post-frontend
 
-**India Post Hackathon 2025** | Department of Posts, Government of India
+AI-Powered Delivery Post Office Identification System
 
-A comprehensive AI-powered system for identifying correct delivery post offices for mail items with unclear or mismatched addresses, built on the DIGIPIN geospatial infrastructure.
+Department of Posts, Government of India | India Post Hackathon 2025
 
-## 📊 Problem Statement
+## Project Overview
 
-India Post operates 165,000+ post offices across 19,000+ PIN codes. However, approximately **5% of daily mail articles contain incorrect or mismatched PIN codes**, leading to:
-- Misrouted mail and delivery delays
-- Customer dissatisfaction  
-- Operational inefficiencies
-- Increased costs from wasteful movement
+This project delivers an intelligent, AI-powered system for identifying the correct delivery post office for mail items with unclear or mismatched addresses. The solution leverages geospatial infrastructure (DIGIPIN), machine learning, and a comprehensive PIN code dataset to automate address correction, improve operational efficiency, and enhance customer satisfaction for India Post.
 
-## 💡 Our Solution
+## Problem Statement
 
-An intelligent system that:
-1. **Identifies correct delivery locations** for unclear/mismatched addresses
-2. **Automates address correction** using ML-based scanning and matching
-3. **Aligns with operational databases** for PIN code clubbing/mapping
-4. **Provides visual verification** through maps and 3D visualization
-5. **Processes addresses in bulk** via CSV uploads
+India Post operates over 165,000 post offices serving more than 19,000 PIN codes. Approximately 5% of daily mail articles contain incorrect or mismatched PIN codes, resulting in misrouted mail, delivery delays, increased operational costs, and customer dissatisfaction. The challenge is to automate the identification and correction of delivery addresses using advanced AI and geospatial technologies.
 
-## 🏗️ System Architecture
+## Solution Summary
+
+The system consists of four main components:
+
+1. **Frontend Web Application**: Modern React-based UI for address input, batch processing, and visualization.
+2. **Backend API**: Node.js/Express service for orchestrating address matching, PIN code lookups, and batch operations.
+3. **ML Microservice**: Python/FastAPI service for AI-powered address normalization, matching, and OCR extraction.
+4. **DIGIPIN API**: Node.js service for geospatial encoding and decoding of addresses.
+
+## Architecture
 
 ```
-┌─────────────────┐
-│   Frontend      │  React + Vite + Tailwind + Google OAuth
-│  (Port 5173)    │  • Home Page
-│                 │  • Login/Auth
-└────────┬────────┘  • Dashboard
-         │           • Address Matching
-         │           • Batch Processing
-         ▼
-┌─────────────────┐
-│  Backend API    │  Node.js + Express
-│  (Port 3001)    │  • Address matching
-│                 │  • CSV processing
-└────────┬────────┘  • PIN code lookups
-         │
-    ┌────┴────┬────────────────┐
-    ▼         ▼                ▼
-┌─────────┐ ┌──────────┐  ┌──────────┐
-│ ML API  │ │ DIGIPIN  │  │  Data    │
-│(Pt 8000)│ │(Pt 5000) │  │ (CSV)    │
-│         │ │          │  │165K+     │
-│Sentence │ │Geo       │  │records   │
-│Transformer│ │Encoding │  │          │
-└─────────┘ └──────────┘  └──────────┘
+┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
+│  Frontend   │ → │  Backend    │ → │  ML Service │ → │  DIGIPIN    │
+│  (React)    │   │  (Express)  │   │  (FastAPI)  │   │  (Node.js)  │
+└─────────────┘   └─────────────┘   └─────────────┘   └─────────────┘
 ```
 
-## 🎯 Key Features
+## Key Features
 
-### 🔐 Secure Authentication
-- **Google OAuth 2.0** integration for authorized personnel
-- Protected routes and session management
-- Client-side authentication flow
+- Secure authentication via Google OAuth 2.0
+- AI-powered address matching using sentence-transformer embeddings and FAISS similarity search
+- Bulk address correction via CSV upload and batch processing
+- Interactive map and 3D visualization of delivery locations
+- Real-time analytics dashboard for operational insights
 
-### 🤖 AI-Powered Matching
-- Sentence transformer embeddings (MiniLM-L6)
-- FAISS similarity search across 165K+ post offices
-- Confidence scoring (0-100%)
-- OCR support for parcel images
+## Technology Stack
 
-### 📦 Batch Processing
-- Upload CSV with thousands of addresses
-- Real-time progress tracking
-- Downloadable results with corrections
-- Success rate analytics
+**Frontend:** React 19, Vite 7, Tailwind CSS v4, React Router v7, Google OAuth 2.0
+**Backend:** Node.js 18+, Express, csv-parser, axios
+**ML Service:** Python 3.9+/3.11+, FastAPI, sentence-transformers (MiniLM-L6), FAISS, Tesseract OCR/EasyOCR
+**Data:** All India PIN Code Directory 2025 (165,629+ records), DIGIPIN geospatial encoding
 
-### 🗺️ Visualization
-- Interactive maps showing delivery locations
-- DIGIPIN integration for precise geocoding
-- Multiple match display with confidence levels
-
-### 📊 Analytics Dashboard
-- Real-time statistics
-- Processing metrics
-- Success rate monitoring
-- Recent activity tracking
-
-## 🚀 Quick Start
+## Setup and Installation
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.9+ (for ML service)
+- Node.js 18 or higher
+- Python 3.9 or higher (for ML service)
 - npm or yarn
 
-### Installation
+### Installation Steps
 
-1. **Clone the repository:**
+1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd Hackathon
    ```
-
-2. **Run setup script:**
+2. **Run setup script**
    ```bash
    ./setup.sh
    ```
-
-3. **Configure environment:**
-   ```bash
-   # Edit frontend/.env.local with your settings
-   nano frontend/.env.local
-   ```
-
-4. **Start services:**
-   ```bash
-   # Terminal 1: Frontend
-   cd frontend && npm run dev
-   
-   # Terminal 2: Backend (when ready)
-   cd backend && npm start
-   
-   # Terminal 3: ML Service (when ready)
-   cd ml && python main.py
-   
-   # Terminal 4: DIGIPIN API (already exists)
-   cd digipin && npm start
-   ```
-
-5. **Access the application:**
+3. **Configure environment variables**
+   - Edit `frontend/.env.local` for frontend settings
+   - Edit `.env` files in backend/ml/digipin as required
+4. **Start services**
+   - Frontend: `cd frontend && npm run dev`
+   - Backend: `cd backend && npm start`
+   - ML Service: `cd ml && python main.py`
+   - DIGIPIN API: `cd digipin && npm start`
+5. **Access the application**
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:3001
    - ML API: http://localhost:8000
    - DIGIPIN API: http://localhost:5000
 
-## 📁 Project Structure
+## Usage
 
-```
-Hackathon/
-├── frontend/               # React frontend
-│   ├── src/
-│   │   ├── pages/         # Login, Dashboard, AddressMatch, etc.
-│   │   ├── assets/        # Images and logos
-│   │   └── App.jsx        # Main app with routing
-│   ├── Dockerfile         # Production container
-│   └── .env.local         # Local configuration (gitignored)
-│
-├── backend/               # Node.js backend (to build)
-│   ├── routes/           # API endpoints
-│   ├── services/         # Business logic
-│   └── utils/            # Helper functions
-│
-├── ml/                   # Python ML service (to build)
-│   ├── models/          # AI models
-│   ├── utils/           # OCR, text processing
-│   └── main.py          # FastAPI server
-│
-├── digipin/             # DIGIPIN API (existing)
-│   ├── src/            # Core DIGIPIN logic
-│   └── docs/           # Technical documentation
-│
-├── post/                # Data assets
-│   └── all_india_pincode_directory_2025.csv
-│
-├── secrets/             # OAuth credentials (gitignored)
-│   └── client_secret_*.json
-│
-├── context.md           # Detailed system documentation
-├── SECURITY.md          # Security guidelines
-└── setup.sh            # Setup automation script
-```
+### Single Address Matching
+- Enter address text or upload parcel image
+- System extracts, normalizes, and matches to the correct delivery office
+- Results include top matches, confidence scores, and map visualization
 
-## 🔐 Security
+### Batch Processing
+- Upload CSV file with multiple addresses
+- System processes in batches, provides downloadable results with corrections and analytics
 
-### Google OAuth Configuration
+### Visualization
+- Interactive map displays delivery office locations
+- 3D visualization shows parcel routing and confidence levels
 
-**Client ID (PUBLIC):** `372975400843-ffr7c5j59nmga7tk2nbog6o5mjpgq11s.apps.googleusercontent.com`
+## Security Practices
 
-This Client ID is **safe to share** and is included in the frontend code.
+- Google OAuth Client ID is public and safe to include in frontend code
+- Client Secret is stored securely in the `secrets/` folder (never committed to version control)
+- Environment variables are managed via `.env` files (gitignored)
+- Protected routes require authentication; session tokens are stored securely
+- Secrets folder is excluded from Docker builds
 
-**Client Secret (PRIVATE):** Stored in `secrets/` folder (gitignored)
-
-⚠️ **Important:** The client secret should **NEVER** be committed to version control or included in frontend code.
-
-### What's Protected
-
-- ✅ Client Secret never exposed
-- ✅ Environment variables in `.env.local` (gitignored)
-- ✅ Secrets folder excluded from Docker builds
-- ✅ Protected routes require authentication
-- ✅ Session tokens stored securely
-
-See [SECURITY.md](SECURITY.md) for detailed security guidelines.
-
-## 🐳 Docker Deployment
+## Testing
 
 ### Frontend
-
 ```bash
-cd frontend
-docker build \
-  --build-arg VITE_GOOGLE_CLIENT_ID=372975400843-ffr7c5j59nmga7tk2nbog6o5mjpgq11s.apps.googleusercontent.com \
-  --build-arg VITE_API_BASE_URL=http://localhost:3001 \
-  -t india-post-frontend .
-
-docker run -p 5173:80 india-post-frontend
-```
-
-### Full Stack (with docker-compose)
-
-```bash
-docker-compose up -d
-```
-
-## 📚 Documentation
-
-- [Frontend README](frontend/README.md) - Frontend setup and features
-- [SECURITY.md](SECURITY.md) - Security best practices
-- [context.md](context.md) - Comprehensive system documentation
-- [DIGIPIN Technical Docs](digipin/docs/DIGIPIN_Technical_Document.md)
-
-## 🎨 Pages & Features
-
-### Public Pages
-- **Home (/)** - Landing page with product overview
-- **Login (/login)** - Google OAuth sign-in
-
-### Protected Pages (Requires Authentication)
-- **Dashboard (/dashboard)** - Main control panel with stats
-- **Address Match (/address-match)** - Single address correction
-- **Batch Process (/batch-process)** - Bulk CSV processing
-
-## 🛠️ Technology Stack
-
-### Frontend
-- React 19 with Vite 7
-- Tailwind CSS v4
-- React Router v7
-- Google OAuth 2.0
-
-### Backend (To Build)
-- Node.js 18+ with Express
-- CSV Parser
-- Axios for API calls
-
-### ML Service (To Build)
-- Python 3.9+ with FastAPI
-- sentence-transformers (MiniLM-L6)
-- FAISS for similarity search
-- Tesseract OCR / EasyOCR
-
-### Data
-- All India PIN Code Directory 2025
-- 165,629+ post office records
-- DIGIPIN geospatial encoding
-
-## 🧪 Testing
-
-```bash
-# Frontend
 cd frontend
 npm run lint
-
-# Backend (when implemented)
+```
+### Backend
+```bash
 cd backend
 npm test
-
-# ML Service (when implemented)
+```
+### ML Service
+```bash
 cd ml
 pytest
 ```
 
-## 📊 Performance Targets
+## Performance Targets
 
 - Single address match: <500ms
 - OCR extraction: <2s per image
@@ -271,53 +129,50 @@ pytest
 - Frontend load time: <3s
 - ML matching accuracy: >95%
 
-## 🗺️ Roadmap
+## Roadmap
 
-### Phase 1: Core MVP ✅
-- [x] Frontend with Google OAuth
-- [x] Multi-page application
-- [x] Protected routes
-- [ ] Backend API
-- [ ] ML matching service
+**Phase 1: Core MVP**
+- Frontend with Google OAuth and protected routes
+- Backend API for address matching and PIN code lookups
+- ML matching service
 
-### Phase 2: Enhanced Features
-- [ ] OCR integration
-- [ ] 3D visualization
-- [ ] Real-time suggestions
-- [ ] Explainable AI
+**Phase 2: Enhanced Features**
+- OCR integration
+- 3D visualization
+- Real-time suggestions and explainable AI
 
-### Phase 3: Production Ready
-- [ ] Performance optimization
-- [ ] Comprehensive testing
-- [ ] Production deployment
-- [ ] Monitoring and logging
+**Phase 3: Production Ready**
+- Performance optimization
+- Comprehensive testing
+- Production deployment
+- Monitoring and logging
 
-## 👥 Team
+## Project Structure
 
-Department of Posts, Government of India
+```
+Hackathon/
+├── frontend/    # React frontend
+├── backend/     # Node.js backend
+├── ml/          # Python ML service
+├── digipin/     # DIGIPIN API
+├── post/        # Data assets
+├── secrets/     # OAuth credentials (gitignored)
+├── context.md   # System documentation
+├── setup.sh     # Setup script
+```
 
-## 📄 License
+## License
 
-India Post Hackathon 2025
+India Post Hackathon 2025 | Department of Posts, Government of India
 
-## 🤝 Contributing
+## References
 
-This is a hackathon project. For production deployment:
-1. Implement comprehensive testing
-2. Add monitoring and logging
-3. Set up CI/CD pipelines
-4. Conduct security audit
-5. Load testing and optimization
+- Frontend documentation: `frontend/README.md`
+- Backend documentation: `backend/README.md`
+- ML service documentation: `ml/README.md`
+- DIGIPIN technical documentation: `digipin/docs/DIGIPIN_Technical_Document.md`
+- System context: `context.md`
 
-## 📞 Support
+## Support
 
-For questions or issues:
-- Check documentation in `context.md`
-- Review security guidelines in `SECURITY.md`
-- See frontend-specific docs in `frontend/README.md`
-
----
-
-**Built with ❤️ for India Post Hackathon 2025**
-
-🏛️ Department of Posts | 🇮🇳 Government of India
+For questions or issues, please refer to the documentation files above or contact the project team.
