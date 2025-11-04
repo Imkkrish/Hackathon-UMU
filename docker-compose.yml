@@ -82,6 +82,7 @@ services:
     volumes:
       - ./post:/data:ro
       - backend-uploads:/app/uploads
+      - backend-logs:/app/logs
     restart: unless-stopped
     networks:
       - delivery-network
@@ -136,4 +137,7 @@ volumes:
     driver: local
   backend-uploads:
     name: backend-uploads
+    driver: local
+  backend-logs:
+    name: backend-logs
     driver: local

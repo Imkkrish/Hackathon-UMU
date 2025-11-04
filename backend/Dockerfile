@@ -23,8 +23,8 @@ WORKDIR /app
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --chown=nodejs:nodejs . .
 
-# Create uploads directory
-RUN mkdir -p uploads && chown -R nodejs:nodejs uploads
+# Create uploads and logs directories
+RUN mkdir -p uploads logs && chown -R nodejs:nodejs uploads logs
 
 # Switch to non-root user
 USER nodejs

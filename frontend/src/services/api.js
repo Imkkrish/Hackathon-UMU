@@ -3,10 +3,17 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
 const DIGIPIN_API_URL = import.meta.env.VITE_DIGIPIN_API_URL || 'http://localhost:5000';
 
+let userId = localStorage.getItem('userId');
+if (!userId) {
+  userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  localStorage.setItem('userId', userId);
+}
+
 async function apiCall(url, options = {}) {
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
+      'X-User-Id': userId,
       ...options.headers,
     },
   };
@@ -34,7 +41,7 @@ export const addressAPI = {
     return apiCall(`${API_BASE_URL}/api/address/match`, {
       method: 'POST',
       body: JSON.stringify({
-        address: addressText,
+        text: addressText,
         top_k: options.topK || 5,
         include_digipin: options.includeDigipin !== false,
       }),
@@ -236,6 +243,18 @@ export const digipinAPI = {
   },
 };
 
+export const activityAPI = {
+  getUserActivity: async (limit = 100) => {
+    return apiCall(`${API_BASE_URL}/api/activity/user/${userId}?limit=${limit}`);
+  },
+
+  getStats: async () => {
+    return apiCall(`${API_BASE_URL}/api/activity/stats`);
+  },
+};
+
+export const getUserId = () => userId;
+
 export default {
   address: addressAPI,
   pincode: pincodeAPI,
@@ -243,4 +262,6 @@ export default {
   health: healthAPI,
   ml: mlAPI,
   digipin: digipinAPI,
+  activity: activityAPI,
+  getUserId,
 };
