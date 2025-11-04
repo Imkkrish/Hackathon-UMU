@@ -55,4 +55,6 @@ DOCKER_SETUP.md
 ML_ARCHITECTURE.md
 ML_CHECKLIST.md
 ML_FIX_SUMMARY.md
-ML_QUICK_REFERENCE.mdml/pincode_faiss.index
+ML_QUICK_REFERENCE.md
+ml/pincode_faiss.index
+frontend/.env.production
