@@ -1,1 +1,27 @@
+# Dependencies
 node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Uploads
+uploads/
+*.csv
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+.env.example
