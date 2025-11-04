@@ -234,9 +234,14 @@ function AddressMatch() {
                           </div>
                         </div>
 
-                        <button className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors">
+                        <a 
+                          href={`https://www.google.com/maps?q=${match.latitude},${match.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors block text-center"
+                        >
                           View on Map →
-                        </button>
+                        </a>
                       </div>
                     ))}
                   </div>
