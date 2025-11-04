@@ -19,4 +19,4 @@ certifi==2024.8.30
 python-dotenv==1.0.1
 
 # Database
-sqlite3-python==1.0.0
+# sqlite3 is a built-in Python module, no need to install it

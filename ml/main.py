@@ -44,9 +44,12 @@ app.add_middleware(
 # Initialize matcher
 matcher = None
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the address matcher on startup"""
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for FastAPI application"""
+    # Startup
     global matcher
     print("🚀 Starting ML Microservice...")
     print(f"📊 Loading dataset from: {CSV_PATH}")
@@ -58,6 +61,21 @@ async def startup_event():
     except Exception as e:
         print(f"❌ Failed to initialize matcher: {e}")
         raise
+        
+    yield  # Application running
+    
+    # Shutdown
+    if matcher:
+        print("📝 Cleaning up resources...")
+        # Add any cleanup if needed
+
+# Update FastAPI app initialization with lifespan
+app = FastAPI(
+    title="AI Delivery Post Office Identification - ML Service",
+    description="ML microservice for address matching and OCR extraction (Challenge 1)",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # Pydantic models
 class NormalizeRequest(BaseModel):
