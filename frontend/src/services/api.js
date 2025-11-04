@@ -52,12 +52,16 @@ export const addressAPI = {
   matchImage: async (imageFile, options = {}) => {
     const formData = new FormData();
     formData.append('image', imageFile);
-    formData.append('top_k', options.topK || 5);
+    if (options.topK) {
+      formData.append('top_k', options.topK);
+    }
 
-    return apiCall(`${API_BASE_URL}/api/address/match`, {
+    return apiCall(`${API_BASE_URL}/api/address/ocr-match`, {
       method: 'POST',
       body: formData,
-      headers: {}, 
+      headers: {
+        'X-User-Id': userId,
+      }, 
     });
   },
 

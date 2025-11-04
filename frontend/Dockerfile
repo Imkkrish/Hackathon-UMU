@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install ALL dependencies (including devDependencies needed for build)
+RUN npm ci
 
 # Copy source code (excluding secrets)
 COPY . .
@@ -19,6 +19,7 @@ ARG VITE_ML_API_URL
 ARG VITE_DIGIPIN_API_URL
 ARG VITE_APP_NAME
 ARG VITE_MAX_UPLOAD_SIZE
+ARG VITE_GOOGLE_CLIENT_ID
 
 # Set environment variables from build args
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
@@ -26,6 +27,7 @@ ENV VITE_ML_API_URL=$VITE_ML_API_URL
 ENV VITE_DIGIPIN_API_URL=$VITE_DIGIPIN_API_URL
 ENV VITE_APP_NAME=$VITE_APP_NAME
 ENV VITE_MAX_UPLOAD_SIZE=$VITE_MAX_UPLOAD_SIZE
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 
 # Build the application
 RUN npm run build

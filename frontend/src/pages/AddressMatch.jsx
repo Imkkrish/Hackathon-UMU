@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import indiaPostLogo from '../assets/indiapostlogo.svg';
 import mapLocation from '../assets/map-location.png';
 import aiBrain from '../assets/ai-brain.png';
+import { addressAPI } from '../services/api';
 
 function AddressMatch() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ function AddressMatch() {
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -21,48 +23,57 @@ function AddressMatch() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
-    // Simulate API call
-    setTimeout(() => {
-      setResults({
-        matches: [
-          {
-            rank: 1,
-            pincode: '504273',
-            officename: 'Kothimir B.O',
-            district: 'KUMURAM BHEEM ASIFABAD',
-            state: 'TELANGANA',
-            confidence: 0.95,
-            latitude: 19.3638689,
-            longitude: 79.5376658,
-            digipin: '4P3-JK8-52C9'
-          },
-          {
-            rank: 2,
-            pincode: '504296',
-            officename: 'Kammergaon B.O',
-            district: 'KUMURAM BHEEM ASIFABAD',
-            state: 'TELANGANA',
-            confidence: 0.78,
-            latitude: 19.4,
-            longitude: 79.6,
-            digipin: '4P3-JK9-62D1'
-          },
-          {
-            rank: 3,
-            pincode: '504299',
-            officename: 'Papanpet B.O',
-            district: 'KUMURAM BHEEM ASIFABAD',
-            state: 'TELANGANA',
-            confidence: 0.67,
-            latitude: 19.35,
-            longitude: 79.45,
-            digipin: '4P3-JK7-42B8'
-          }
-        ]
-      });
+    try {
+      let response;
+      let matchData;
+      
+      // Call API based on input type
+      if (imageFile) {
+        // Image-based matching (OCR + Match)
+        response = await addressAPI.matchImage(imageFile, { topK: 5 });
+        
+        // Response format: { success: true, data: { ocr: {...}, matching: {...} } }
+        if (response.success && response.data) {
+          matchData = response.data.matching || response.data;
+        }
+      } else if (addressInput.trim()) {
+        // Text-based matching
+        response = await addressAPI.matchText(addressInput, { topK: 5 });
+        
+        // Response format: { success: true, data: { matches: [...] } }
+        if (response.success && response.data) {
+          matchData = response.data;
+        }
+      }
+      
+      // Transform API response to match component format
+      if (matchData && matchData.matches && matchData.matches.length > 0) {
+        const formattedMatches = matchData.matches.map((match, index) => ({
+          rank: index + 1,
+          pincode: match.pincode,
+          officename: match.officename || match.office_name,
+          district: match.district || match.districtname,
+          state: match.state || match.statename,
+          confidence: match.confidence || match.score,
+          latitude: match.latitude || match.lat || 0,
+          longitude: match.longitude || match.lon || 0,
+          digipin: match.digipin || 'N/A'
+        }));
+        
+        setResults({ matches: formattedMatches });
+      } else {
+        setError('No matches found. Please try a different address.');
+        setResults(null);
+      }
+    } catch (err) {
+      console.error('Error matching address:', err);
+      setError(err.message || 'Failed to process your request. Please check if all services are running.');
+      setResults(null);
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const getConfidenceColor = (confidence) => {
@@ -162,6 +173,13 @@ function AddressMatch() {
                     '🔍 Find Matching Delivery Office'
                   )}
                 </button>
+                
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    <p className="font-medium">Error</p>
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
               </form>
             </div>
           </div>
