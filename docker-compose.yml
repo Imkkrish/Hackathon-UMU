@@ -1,32 +1,23 @@
-# AI-Powered Delivery Post Office Identification System
-# Docker Compose Configuration
-
 services:
-  # DIGIPIN Backend API (Port 5000)
-  # Temporarily commented due to port 5000 conflict with macOS ControlCenter
-  # To use digipin: either change the port mapping below or disable ControlCenter's use of port 5000
-  # Change port mapping to: "5001:5000" to run digipin on port 5001 instead
+  # DIGIPIN Backend API (Port 5002)
   digipin:
     build:
       context: ./digipin
       dockerfile: Dockerfile
     container_name: digipin-api
     ports:
-      - "5001:5000"  # Changed to "5001:5000" to avoid conflict
+      - "5002:5002"  
     environment:
       - NODE_ENV=production
-      - PORT=5001
-    volumes:
-      - ./digipin:/app
-      - /app/node_modules
+      - PORT=5002
     restart: unless-stopped
     networks:
       - delivery-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/api/digipin/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 10s
 
   # ML Microservice (Port 8000)
@@ -41,20 +32,20 @@ services:
       - CSV_PATH=/data/all_india_pincode_directory_2025.csv
       - ML_PORT=8000
       - ML_HOST=0.0.0.0
-      - DIGIPIN_API_URL=http://digipin:5001
+      - DIGIPIN_API_URL=http://digipin:5002
       - MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
     volumes:
-      - ./ml:/app
       - ./post:/data:ro  # Mount data directory as read-only
       - ml-models-cache:/root/.cache  # Cache for ML models
       - ml-faiss-cache:/app/cache  # Cache for FAISS index and metadata
     restart: unless-stopped
     networks:
       - delivery-network
-    # depends_on:
-    #   - digipin  # Commented due to digipin port conflict
+    depends_on:
+      digipin:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "python -c 'import requests; requests.get(\"http://localhost:8000/health\")'"]
+      test: ["CMD-SHELL", "python -c 'import requests; requests.get(\"http://localhost:8000/health\")' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -72,7 +63,7 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - HOST=0.0.0.0
-      - DIGIPIN_API_URL=http://digipin:5001
+      - DIGIPIN_API_URL=http://digipin:5002
       - ML_API_URL=http://ml-service:8000
       - CSV_PATH=/data/all_india_pincode_directory_2025.csv
       - CORS_ORIGIN=http://localhost:5173
@@ -88,10 +79,12 @@ services:
     networks:
       - delivery-network
     depends_on:
-      # - digipin  # Commented due to digipin port conflict
-      - ml-service
+      digipin:
+        condition: service_healthy
+      ml-service:
+        condition: service_started  # Changed from service_healthy to service_started
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3001/api/health/live', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})\""]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3001/api/health/live || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -105,7 +98,7 @@ services:
       args:
         # Build-time variables only - NO SECRETS HERE
         - VITE_API_URL=http://localhost:3001
-        - VITE_DIGIPIN_API_URL=http://localhost:5001
+        - VITE_DIGIPIN_API_URL=http://localhost:5002
         - VITE_ML_API_URL=http://localhost:8000
         - VITE_GOOGLE_CLIENT_ID=372975400843-ffr7c5j59nmga7tk2nbog6o5mjpgq11s.apps.googleusercontent.com
     container_name: frontend-app
@@ -117,7 +110,8 @@ services:
     networks:
       - delivery-network
     depends_on:
-      - backend
+      backend:
+        condition: service_started  # Changed to service_started to not wait for health
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const DIGIPIN_API_URL = process.env.DIGIPIN_API_URL || 'http://localhost:5000';
+const DIGIPIN_API_URL = process.env.DIGIPIN_API_URL || 'http://localhost:5002';
 
 export async function encodeDigipin(latitude, longitude) {
   try {

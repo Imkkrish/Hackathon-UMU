@@ -4,11 +4,127 @@ import indiaPostLogo from '../assets/indiapostlogo.svg';
 import deliveryTruck from '../assets/delivery-truck.png';
 import analyticsChart from '../assets/analytics-chart.png';
 import aiBrain from '../assets/ai-brain.png';
+import api from '../services/api';
+
+// Helper functions
+function getTimeAgo(timestamp) {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diffMs = now - past;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+}
+
+function getActionDisplay(action) {
+  const displays = {
+    'address-match': { label: 'Address Matched', bgColor: 'bg-green-100', textColor: 'text-green-600' },
+    'batch-process': { label: 'Batch Processing', bgColor: 'bg-blue-100', textColor: 'text-blue-600' },
+    'ocr-extract': { label: 'OCR Extracted', bgColor: 'bg-purple-100', textColor: 'text-purple-600' },
+    'pincode-lookup': { label: 'Pincode Lookup', bgColor: 'bg-indigo-100', textColor: 'text-indigo-600' },
+    'POST /match': { label: 'Address Match Request', bgColor: 'bg-green-100', textColor: 'text-green-600' },
+    'POST /batch': { label: 'Batch Processing', bgColor: 'bg-blue-100', textColor: 'text-blue-600' },
+    'GET /pincode': { label: 'Pincode Lookup', bgColor: 'bg-indigo-100', textColor: 'text-indigo-600' },
+  };
+  return displays[action] || { label: formatActionLabel(action), bgColor: 'bg-gray-100', textColor: 'text-gray-600' };
+}
+
+function formatActionLabel(action) {
+  if (!action) return 'Activity';
+  // Convert "POST /match" to "POST Match"
+  if (action.includes('/')) {
+    const parts = action.split(' ');
+    if (parts.length === 2) {
+      const method = parts[0];
+      const path = parts[1].replace('/', '').replace(/-/g, ' ');
+      return `${method} ${path.charAt(0).toUpperCase() + path.slice(1)}`;
+    }
+  }
+  // Convert "address-match" to "Address Match"
+  return action.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+function getActivityDetails(activity) {
+  if (!activity.details) return 'No details available';
+  
+  const details = activity.details;
+  
+  // Address match activity
+  if (activity.action === 'address-match') {
+    if (details.query) {
+      const match = details.matches?.[0];
+      if (match) {
+        const confidence = match.confidence ? `${(match.confidence * 100).toFixed(0)}%` : 'N/A';
+        return `${match.officename || 'Office'}, ${match.district || ''}, ${match.state || ''} - ${confidence}`;
+      }
+      return `Query: ${details.query.substring(0, 50)}...`;
+    }
+    if (details.text) {
+      return `Query: ${details.text.substring(0, 50)}...`;
+    }
+  }
+  
+  // Batch process activity
+  if (activity.action === 'batch-process') {
+    if (details.count) {
+      return `${details.count} addresses processed`;
+    }
+    if (details.filename) {
+      return `File: ${details.filename}`;
+    }
+  }
+  
+  // OCR extraction activity
+  if (activity.action === 'ocr-extract') {
+    if (details.extractedText) {
+      return `Extracted: ${details.extractedText.substring(0, 50)}...`;
+    }
+    if (details.text) {
+      return `Text: ${details.text.substring(0, 50)}...`;
+    }
+  }
+  
+  // Pincode lookup
+  if (activity.action === 'pincode-lookup') {
+    if (details.pincode) {
+      return `Pincode: ${details.pincode}`;
+    }
+  }
+  
+  // Generic text field
+  if (details.text && typeof details.text === 'string') {
+    return details.text.substring(0, 60) + (details.text.length > 60 ? '...' : '');
+  }
+  
+  if (details.query && typeof details.query === 'string') {
+    return details.query.substring(0, 60) + (details.query.length > 60 ? '...' : '');
+  }
+  
+  // If we have IP info, show a more user-friendly message
+  if (details.ip) {
+    return `Request from ${details.ip.substring(0, 15)}...`;
+  }
+  
+  // Fallback: try to show something meaningful
+  const detailsStr = JSON.stringify(details);
+  if (detailsStr.length > 100) {
+    return 'Activity details available';
+  }
+  return detailsStr.substring(0, 60);
+}
 
 function Dashboard() {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   const [deliveryResult, setDeliveryResult] = useState(null);
+  const [activityStats, setActivityStats] = useState(null);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUserInfo = sessionStorage.getItem('user_info');
@@ -16,7 +132,33 @@ function Dashboard() {
       setUserInfo(JSON.parse(storedUserInfo));
     } else {
       navigate('/login');
+      return;
     }
+
+    // Fetch real activity data
+    const fetchActivityData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch user activity stats
+        const statsResponse = await api.activity.getStats();
+        if (statsResponse.success) {
+          setActivityStats(statsResponse.stats);
+        }
+
+        // Fetch recent activities
+        const activityResponse = await api.activity.getUserActivity(20);
+        if (activityResponse.success) {
+          setRecentActivities(activityResponse.activities);
+        }
+      } catch (error) {
+        console.error('Error fetching activity data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivityData();
 
     // Check for pending address/image after login
     const pendingAddress = sessionStorage.getItem('pending_address');
@@ -156,8 +298,10 @@ function Dashboard() {
           <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-600 text-sm">Today's Scans</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">1,247</p>
+                <p className="text-gray-600 text-sm">Total Activities</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {loading ? '...' : (activityStats?.totalActivities || 0).toLocaleString()}
+                </p>
               </div>
               <div className="bg-blue-100 p-3 rounded-lg">
                 <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,14 +309,16 @@ function Dashboard() {
                 </svg>
               </div>
             </div>
-            <p className="text-green-600 text-sm mt-2">↑ 12% from yesterday</p>
+            <p className="text-green-600 text-sm mt-2">Real-time data</p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-600 text-sm">Match Accuracy</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">96.3%</p>
+                <p className="text-gray-600 text-sm">Address Matches</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {loading ? '...' : (activityStats?.actionCounts?.['address-match'] || 0).toLocaleString()}
+                </p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg">
                 <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,14 +326,16 @@ function Dashboard() {
                 </svg>
               </div>
             </div>
-            <p className="text-green-600 text-sm mt-2">↑ 2.1% improvement</p>
+            <p className="text-green-600 text-sm mt-2">Successful matches</p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6" style={{ borderLeft: '4px solid #8B0000' }}>
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-600 text-sm">Avg. Process Time</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">1.2s</p>
+                <p className="text-gray-600 text-sm">Batch Jobs</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {loading ? '...' : (activityStats?.actionCounts?.['batch-process'] || 0).toLocaleString()}
+                </p>
               </div>
               <div className="p-3 rounded-lg" style={{ backgroundColor: '#8B00001A' }}>
                 <svg className="h-6 w-6" style={{ color: '#8B0000' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,22 +343,24 @@ function Dashboard() {
                 </svg>
               </div>
             </div>
-            <p className="text-green-600 text-sm mt-2">↓ 0.3s faster</p>
+            <p className="text-gray-600 text-sm mt-2">Completed</p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-purple-500">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-600 text-sm">Batch Jobs</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">23</p>
+                <p className="text-gray-600 text-sm">Unique Users</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {loading ? '...' : (activityStats?.uniqueUsers || 0).toLocaleString()}
+                </p>
               </div>
               <div className="bg-purple-100 p-3 rounded-lg">
                 <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mt-2">5 in progress</p>
+            <p className="text-gray-600 text-sm mt-2">Active users</p>
           </div>
         </div>
 
@@ -280,42 +430,38 @@ function Dashboard() {
         {/* Recent Activity */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {[
-              { action: 'Address matched', address: 'Kothimir B.O, Telangana', confidence: '95%', time: '2 minutes ago', status: 'success' },
-              { action: 'Batch completed', address: '1,000 addresses processed', confidence: '92%', time: '15 minutes ago', status: 'success' },
-              { action: 'OCR extracted', address: 'Papanpet BO, Adilabad', confidence: '88%', time: '1 hour ago', status: 'success' },
-              { action: 'Manual verification', address: 'Yellapur Warangal', confidence: '67%', time: '2 hours ago', status: 'warning' },
-            ].map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-4">
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                    item.status === 'success' ? 'bg-green-100 text-green-600' : ''
-                  }`}
-                  style={item.status === 'warning' ? { backgroundColor: '#8B00001A', color: '#8B0000' } : {}}
-                  >
-                    {item.status === 'success' ? (
-                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    )}
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Loading activities...</div>
+          ) : recentActivities.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No recent activities found</div>
+          ) : (
+            <div className="space-y-4">
+              {recentActivities.slice(0, 10).map((activity, index) => {
+                const timeAgo = getTimeAgo(activity.timestamp);
+                const actionDisplay = getActionDisplay(activity.action);
+                const detailsText = getActivityDetails(activity);
+                
+                return (
+                  <div key={activity.id || index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${actionDisplay.bgColor} ${actionDisplay.textColor}`}>
+                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{actionDisplay.label}</p>
+                        <p className="text-sm text-gray-600">{detailsText}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{timeAgo}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{item.action}</p>
-                    <p className="text-sm text-gray-600">{item.address}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">{item.confidence}</p>
-                  <p className="text-sm text-gray-500">{item.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
     </div>

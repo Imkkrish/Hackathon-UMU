@@ -29,7 +29,7 @@ class AddressMatcher:
         self.is_ready = False
         
         # DIGIPIN API configuration
-        self.digipin_api = os.getenv("DIGIPIN_API_URL", "http://localhost:5000")
+        self.digipin_api = os.getenv("DIGIPIN_API_URL", "http://localhost:5002")
         
         # Cache file paths
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -112,8 +112,9 @@ class AddressMatcher:
             # Normalize search text
             self.df['search_text_norm'] = self.df['search_text'].apply(normalize_text)
             
-            # Generate DIGIPIN (simple hash-based for now)
-            self.df['digipin'] = self.df.apply(self._generate_digipin, axis=1)
+            # Generate DIGIPIN (will be done lazily when needed, not during init)
+            # Set to N/A initially to avoid startup delays
+            self.df['digipin'] = 'N/A'
             
             self.total_records = len(self.df)
             print(f"✅ Loaded {self.total_records} post office records")
@@ -145,20 +146,46 @@ class AddressMatcher:
         return mapping
     
     def _generate_digipin(self, row) -> str:
-        """Generate a DIGIPIN-like code (simplified hash-based)"""
+        """Generate DIGIPIN using the real DIGIPIN API"""
         try:
-            # Use lat/long if available
+            # Use lat/long if available to call real DIGIPIN API
             if pd.notna(row.get('latitude')) and pd.notna(row.get('longitude')):
-                base = f"{row['pincode']}-{row['latitude']:.6f}-{row['longitude']:.6f}"
-            else:
-                base = f"{row['pincode']}-{row['officename']}-{row['district']}"
+                try:
+                    # Call real DIGIPIN encode API
+                    response = requests.post(
+                        f"{self.digipin_api}/api/digipin/encode",
+                        json={
+                            "latitude": float(row['latitude']),
+                            "longitude": float(row['longitude'])
+                        },
+                        timeout=5
+                    )
+                    if response.status_code == 200:
+                        return response.json().get('digipin', 'N/A')
+                except Exception as e:
+                    print(f"⚠️  DIGIPIN API call failed: {e}")
             
-            # Generate 12-character hash
-            hash_str = hashlib.sha256(base.encode()).hexdigest()[:12].upper()
-            # Format as XXX-XXX-XXXX
-            return f"{hash_str[:3]}-{hash_str[3:6]}-{hash_str[6:12]}"
+            # Fallback: If DIGIPIN API is unavailable or no lat/long, return N/A
+            return "N/A"
         except:
             return "N/A"
+    
+    def _generate_digipin_for_coords(self, latitude: float, longitude: float) -> str:
+        """Generate DIGIPIN for specific coordinates using real DIGIPIN API"""
+        try:
+            response = requests.post(
+                f"{self.digipin_api}/api/digipin/encode",
+                json={
+                    "latitude": latitude,
+                    "longitude": longitude
+                },
+                timeout=2  # Short timeout to avoid hanging
+            )
+            if response.status_code == 200:
+                return response.json().get('digipin', 'N/A')
+        except Exception as e:
+            print(f"⚠️  DIGIPIN API call failed: {e}")
+        return "N/A"
     
     async def _load_model(self):
         """Load sentence transformer model"""
@@ -325,7 +352,12 @@ class AddressMatcher:
             
             # Add optional fields
             if include_digipin:
-                match['digipin'] = str(record['digipin'])
+                # Generate DIGIPIN on-demand only when requested
+                if 'latitude' in record and pd.notna(record['latitude']) and 'longitude' in record and pd.notna(record['longitude']):
+                    digipin = self._generate_digipin_for_coords(float(record['latitude']), float(record['longitude']))
+                    match['digipin'] = digipin
+                else:
+                    match['digipin'] = 'N/A'
             
             if 'latitude' in record and pd.notna(record['latitude']):
                 match['latitude'] = float(record['latitude'])
