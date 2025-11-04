@@ -163,7 +163,7 @@ Hackathon/
 
 ## License
 
-India Post Hackathon 2025 | Department of Posts, Government of India
+India Post 2025 | Department of Posts, Government of India
 
 ## References
 
