@@ -27,11 +27,32 @@ function getActionDisplay(action) {
     'batch-process': { label: 'Batch Processing', bgColor: 'bg-blue-100', textColor: 'text-blue-600' },
     'ocr-extract': { label: 'OCR Extracted', bgColor: 'bg-purple-100', textColor: 'text-purple-600' },
     'pincode-lookup': { label: 'Pincode Lookup', bgColor: 'bg-indigo-100', textColor: 'text-indigo-600' },
-    'POST /match': { label: 'Address Match Request', bgColor: 'bg-green-100', textColor: 'text-green-600' },
-    'POST /batch': { label: 'Batch Processing', bgColor: 'bg-blue-100', textColor: 'text-blue-600' },
-    'GET /pincode': { label: 'Pincode Lookup', bgColor: 'bg-indigo-100', textColor: 'text-indigo-600' },
+    'POST /api/address/match': { label: 'Address Match', bgColor: 'bg-green-100', textColor: 'text-green-600' },
+    'POST /api/batch/upload': { label: 'Batch Upload', bgColor: 'bg-blue-100', textColor: 'text-blue-600' },
+    'POST /api/address/validate': { label: 'Address Validation', bgColor: 'bg-yellow-100', textColor: 'text-yellow-600' },
+    'POST /api/pincode/validate': { label: 'PIN Code Validation', bgColor: 'bg-indigo-100', textColor: 'text-indigo-600' },
   };
-  return displays[action] || { label: formatActionLabel(action), bgColor: 'bg-gray-100', textColor: 'text-gray-600' };
+  
+  // Try exact match first
+  if (displays[action]) {
+    return displays[action];
+  }
+  
+  // Try partial matches
+  if (action.includes('address/match') || action.includes('match')) {
+    return { label: 'Address Match', bgColor: 'bg-green-100', textColor: 'text-green-600' };
+  }
+  if (action.includes('batch')) {
+    return { label: 'Batch Processing', bgColor: 'bg-blue-100', textColor: 'text-blue-600' };
+  }
+  if (action.includes('pincode')) {
+    return { label: 'PIN Code Query', bgColor: 'bg-indigo-100', textColor: 'text-indigo-600' };
+  }
+  if (action.includes('validate')) {
+    return { label: 'Validation', bgColor: 'bg-yellow-100', textColor: 'text-yellow-600' };
+  }
+  
+  return { label: formatActionLabel(action), bgColor: 'bg-gray-100', textColor: 'text-gray-600' };
 }
 
 function formatActionLabel(action) {
@@ -54,23 +75,28 @@ function getActivityDetails(activity) {
   
   const details = activity.details;
   
-  // Address match activity
-  if (activity.action === 'address-match') {
-    if (details.query) {
-      const match = details.matches?.[0];
-      if (match) {
-        const confidence = match.confidence ? `${(match.confidence * 100).toFixed(0)}%` : 'N/A';
-        return `${match.officename || 'Office'}, ${match.district || ''}, ${match.state || ''} - ${confidence}`;
-      }
-      return `Query: ${details.query.substring(0, 50)}...`;
+  // Address match activity - enhanced details
+  if (activity.action.includes('address/match') || activity.action === 'address-match') {
+    if (details.matchedOffice) {
+      const confidence = details.confidence ? ` (${(details.confidence * 100).toFixed(0)}% confidence)` : '';
+      return `Matched: ${details.matchedOffice}, ${details.district}, ${details.state} - PIN: ${details.pincode}${confidence}`;
     }
-    if (details.text) {
-      return `Query: ${details.text.substring(0, 50)}...`;
+    if (details.queryText) {
+      return `Query: ${details.queryText.substring(0, 50)}${details.queryText.length > 50 ? '...' : ''}`;
+    }
+    if (details.requestBody?.address) {
+      return `Address: ${details.requestBody.address.substring(0, 50)}...`;
+    }
+    if (details.requestBody?.text) {
+      return `Text: ${details.requestBody.text.substring(0, 50)}...`;
     }
   }
   
-  // Batch process activity
-  if (activity.action === 'batch-process') {
+  // Batch process activity - enhanced details
+  if (activity.action.includes('batch') || activity.action === 'batch-process') {
+    if (details.batchJobId) {
+      return `Job ID: ${details.batchJobId.substring(0, 13)}... | Total rows: ${details.totalRows}`;
+    }
     if (details.count) {
       return `${details.count} addresses processed`;
     }
@@ -79,43 +105,35 @@ function getActivityDetails(activity) {
     }
   }
   
-  // OCR extraction activity
-  if (activity.action === 'ocr-extract') {
-    if (details.extractedText) {
-      return `Extracted: ${details.extractedText.substring(0, 50)}...`;
-    }
-    if (details.text) {
-      return `Text: ${details.text.substring(0, 50)}...`;
-    }
-  }
-  
-  // Pincode lookup
-  if (activity.action === 'pincode-lookup') {
+  // Pincode lookup - enhanced details
+  if (activity.action.includes('pincode') || activity.action === 'pincode-lookup') {
     if (details.pincode) {
-      return `Pincode: ${details.pincode}`;
+      const officeInfo = details.officeCount ? ` (${details.officeCount} offices)` : '';
+      return `PIN Code: ${details.pincode}${officeInfo}`;
     }
   }
   
-  // Generic text field
-  if (details.text && typeof details.text === 'string') {
-    return details.text.substring(0, 60) + (details.text.length > 60 ? '...' : '');
+  // Generic fallbacks
+  if (details.requestBody?.text && typeof details.requestBody.text === 'string') {
+    return `Query: ${details.requestBody.text.substring(0, 60)}${details.requestBody.text.length > 60 ? '...' : ''}`;
   }
   
   if (details.query && typeof details.query === 'string') {
     return details.query.substring(0, 60) + (details.query.length > 60 ? '...' : '');
   }
   
-  // If we have IP info, show a more user-friendly message
-  if (details.ip) {
-    return `Request from ${details.ip.substring(0, 15)}...`;
+  // Show success/failure status
+  if (details.success === false) {
+    return `Failed request from ${details.ip || 'unknown IP'}`;
   }
   
-  // Fallback: try to show something meaningful
-  const detailsStr = JSON.stringify(details);
-  if (detailsStr.length > 100) {
-    return 'Activity details available';
+  // Show IP and response status
+  if (details.ip && details.responseStatus) {
+    return `Request from ${details.ip} - Status: ${details.responseStatus}`;
   }
-  return detailsStr.substring(0, 60);
+  
+  // Last resort fallback
+  return 'Activity recorded';
 }
 
 function Dashboard() {

@@ -19,6 +19,10 @@ function loadActivityLog() {
     if (fs.existsSync(ACTIVITY_LOG_FILE)) {
       const data = fs.readFileSync(ACTIVITY_LOG_FILE, 'utf8');
       activityData = JSON.parse(data);
+      console.log(`Loaded ${activityData.length} activities from log file`);
+    } else {
+      console.log('No existing activity log found, starting fresh');
+      activityData = [];
     }
   } catch (error) {
     console.error('Error loading activity log:', error);
@@ -89,7 +93,16 @@ export function clearOldActivity(daysOld = 30) {
   );
 
   saveActivityLog();
+  console.log(`Cleared ${originalLength - activityData.length} activities older than ${daysOld} days`);
   return originalLength - activityData.length;
+}
+
+export function clearAllActivities() {
+  const count = activityData.length;
+  activityData = [];
+  saveActivityLog();
+  console.log(`Cleared all ${count} activities`);
+  return count;
 }
 
 loadActivityLog();
@@ -98,5 +111,6 @@ export default {
   logUserActivity,
   getUserActivity,
   getActivityStats,
-  clearOldActivity
+  clearOldActivity,
+  clearAllActivities
 };

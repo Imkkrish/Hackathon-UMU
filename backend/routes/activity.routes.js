@@ -42,4 +42,45 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// Clear activities older than X days
+router.delete('/clear-old', async (req, res) => {
+  try {
+    const daysOld = parseInt(req.query.days) || 30;
+    const { clearOldActivity } = await import('../services/activity.service.js');
+    const deletedCount = clearOldActivity(daysOld);
+
+    res.json({
+      success: true,
+      message: `Cleared ${deletedCount} old activities`,
+      deletedCount: deletedCount
+    });
+  } catch (error) {
+    console.error('Activity clear error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Clear ALL activities (for testing/debugging)
+router.delete('/clear-all', async (req, res) => {
+  try {
+    const { clearAllActivities } = await import('../services/activity.service.js');
+    const deletedCount = clearAllActivities();
+
+    res.json({
+      success: true,
+      message: `Cleared all ${deletedCount} activities`,
+      deletedCount: deletedCount
+    });
+  } catch (error) {
+    console.error('Activity clear error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 export default router;
