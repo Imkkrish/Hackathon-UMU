@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 from dotenv import load_dotenv
+import requests
 
 # Import custom modules
 from utils.text_processor import normalize_text, clean_address
@@ -22,9 +23,34 @@ os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 # Configuration
-CSV_PATH = os.getenv("CSV_PATH", "../post/all_india_pincode_directory_2025.csv")
+CSV_PATH = os.getenv("CSV_PATH", "/tmp/all_india_pincode_directory_2025.csv")
+CSV_URL = os.getenv("CSV_URL", "https://storage.googleapis.com/soc-ccpc-cuj.appspot.com/all_india_pincode_directory_2025.csv")
 PORT = int(os.getenv("ML_PORT", 8000))
 HOST = os.getenv("ML_HOST", "0.0.0.0")
+
+def download_csv_from_url(url: str, destination: str):
+    """Download CSV file from URL if it doesn't exist locally"""
+    if os.path.exists(destination):
+        print(f"✅ CSV file already exists at: {destination}")
+        return
+    
+    print(f"📥 Downloading CSV from: {url}")
+    try:
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        
+        # Download the file
+        response = requests.get(url, stream=True, timeout=300)
+        response.raise_for_status()
+        
+        with open(destination, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        print(f"✅ CSV file downloaded successfully to: {destination}")
+    except Exception as e:
+        print(f"❌ Failed to download CSV: {e}")
+        raise
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -53,6 +79,14 @@ async def lifespan(app: FastAPI):
     # Startup
     global matcher
     print("🚀 Starting ML Microservice...")
+    
+    # Download CSV if needed
+    try:
+        download_csv_from_url(CSV_URL, CSV_PATH)
+    except Exception as e:
+        print(f"❌ Failed to download CSV: {e}")
+        raise
+    
     print(f"📊 Loading dataset from: {CSV_PATH}")
     
     try:

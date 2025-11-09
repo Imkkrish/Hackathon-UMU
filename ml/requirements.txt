@@ -17,6 +17,8 @@ Pillow==11.0.0
 # Utilities
 certifi==2024.8.30
 python-dotenv==1.0.1
+google-cloud-storage==2.18.2
+requests==2.32.3
 
 # Database
 # sqlite3 is a built-in Python module, no need to install it
