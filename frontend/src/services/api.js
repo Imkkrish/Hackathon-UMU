@@ -1,5 +1,5 @@
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
 const DIGIPIN_API_URL = import.meta.env.VITE_DIGIPIN_API_URL || 'http://localhost:5002';
 
