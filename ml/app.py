@@ -1,3 +1,4 @@
+# This file was renamed from main.py for Hugging Face Spaces compatibility
 import os
 import certifi
 from fastapi import FastAPI, File, UploadFile, HTTPException
