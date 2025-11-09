@@ -34,7 +34,10 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://hackathon-umu-frontend.onrender.com'
+  ],
   credentials: true
 }));
 
